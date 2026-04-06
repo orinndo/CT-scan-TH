@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>単純CT検査 タイ語音声ガイド</title>
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Segoe UI",sans-serif;
+background:linear-gradient(180deg,#f7fbff,#eef6ff);color:#0f172a;}
+.header{padding:18px 16px 10px;}
+.frame-title{border:2px solid #38bdf8;padding:14px 16px;border-radius:14px;background:#f8fcff;text-align:center;}
+.frame-title h1{margin:0;font-size:20px;}
+.frame-title p{margin:6px 0 0;font-size:14px;color:#475569;}
+.note{font-size:12px;color:#475569;margin:12px 16px;}
+.main{margin:0 16px 24px;padding:16px;background:#fff;border-radius:18px;box-shadow:0 8px 18px rgba(15,23,42,.08);}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+select{flex:1;max-width:100%;font-size:16px;padding:10px 36px 10px 12px;border-radius:12px;border:1px solid #cbd5f5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+button{font-size:15px;padding:10px 14px;border-radius:12px;border:1px solid #cbd5f5;background:#eff6ff;}
+button:active{transform:scale(.98);}
+.label{margin-top:14px;font-size:13px;color:#475569;}
+.jp{font-size:18px;font-weight:600;margin-top:6px;}
+.en{font-size:16px;margin-top:4px;}
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}
+audio{width:100%;margin-top:10px;}
+.status{margin-top:8px;font-size:13px;color:#475569;}
+.hint{margin-top:10px;font-size:12px;color:#64748b;}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="frame-title">
+    <h1>単純CT検査 タイ語音声ガイド</h1>
+    <p>คู่มือเสียงภาษาไทย</p>
+  </div>
+</div>
+
+<p class="note">※ iPhone / iPad / Android で再生できます。最初は「再生」を押してください。</p>
+
+<div class="main">
+  <div class="row">
+    <select id="sel"></select>
+    <button id="prev">← 前</button>
+    <button id="next">次 →</button>
+  </div>
+
+  <div class="label">日本語（内容）</div>
+  <div class="jp" id="jp"></div>
+
+  <div class="label">タイ語</div>
+  <div class="en" id="en"></div>
+
+  <div class="controls">
+    <button id="play">▶︎ 再生</button>
+    <button id="pause">⏸ 一時停止</button>
+    <button id="replay">↻ もう一度</button>
+  </div>
+
+  <div class="status" id="status">待機中 / พร้อมเล่น</div>
+  <audio id="player" controls></audio>
+
+  <div class="hint">
+    再生できない場合：消音モード解除、音量、Bluetooth接続を確認してください。
+  </div>
+</div>
+
+<script>
+const STEPS = [
+ {preview:"すみません、少しよろしいですか？", jp:"すみません、少しよろしいですか？", en:"ขออนุญาตนะคะ ขอเวลาสักครู่ได้ไหมคะ?"},
+ {preview:"こちらをご覧ください。これはあな…", jp:"こちらをご覧ください。これはあなたのお名前と生年月日で合っていますか？", en:"กรุณาดูนี่ค่ะ ชื่อและวันเดือนปีเกิดตรงกับของคุณใช่ไหมคะ?"},
+ {preview:"お名前と生年月日を教えていただけ…", jp:"お名前と生年月日を教えていただけますか？", en:"ขอทราบชื่อและวันเดือนปีเกิดของคุณได้ไหมคะ?"},
+ {preview:"簡単な日本語は理解できますか？", jp:"簡単な日本語は理解できますか？", en:"คุณเข้าใจภาษาญี่ปุ่นง่าย ๆ ได้ไหมคะ?"},
+ {preview:"タイ語の音声ガイドを使用します…", jp:"（通訳不在時）タイ語の音声ガイドで検査を説明します。音声の指示に従ってください。", en:"เราจะอธิบายการตรวจด้วยคู่มือเสียงภาษาไทย กรุณาปฏิบัติตามคำแนะนำในเสียงนะคะ"},
+ {preview:"タイ語通訳を呼びますのでお待ち…", jp:"タイ語を話せる通訳を呼びますので、しばらくお待ちください。", en:"เราจะเรียกล่ามที่พูดภาษาไทยได้ กรุณารอสักครู่นะคะ"},
+ {preview:"どうぞお入りください。", jp:"どうぞお入りください。", en:"เชิญเข้ามาได้เลยค่ะ"},
+ {preview:"これからCT検査を行います。", jp:"これからCT検査を行います。", en:"ตอนนี้เราจะเริ่มตรวจ CT นะคะ"},
+ {preview:"身につけている金属製品を外して…", jp:"身につけている金属製品を外してください。", en:"กรุณาถอดโลหะที่สวมใส่อยู่ออกค่ะ"},
+ {preview:"ピアスや入れ歯など外してください…", jp:"画像に影響するため、ピアス、ネックレス、ヘアピン、ウィッグ、補聴器、入れ歯など、取り外せるものはすべて外してください。", en:"เพื่อไม่ให้มีผลต่อภาพ กรุณาถอดสิ่งที่ถอดได้ทั้งหมด เช่น ต่างหู สร้อยคอ กิ๊บติดผม วิกผม เครื่องช่วยฟัง และฟันปลอมค่ะ"},
+ {preview:"（男性）ズボンに金属があり検査に影響…", jp:"（男性）すみません、ズボンに金属があり検査に影響しますので、ベッドに寝た後、膝あたりまでズボンを下げてもらえますか？", en:"ขออภัยค่ะ มีโลหะที่กางเกงซึ่งอาจมีผลต่อการตรวจ หลังจากนอนบนเตียงแล้ว รบกวนเลื่อนกางเกงลงมาถึงประมาณระดับเข่าได้ไหมคะ?"},
+ {preview:"（女性）ズボンに金属がありますので更衣室へ…", jp:"（女性）すみません、ズボンに金属があり検査に影響しますので、更衣室で検査着に着替えていただけますか？", en:"ขออภัยค่ะ มีโลหะที่กางเกงซึ่งอาจมีผลต่อการตรวจ รบกวนเปลี่ยนเป็นชุดตรวจที่ห้องเปลี่ยนเสื้อผ้าได้ไหมคะ?"},
+ {preview:"更衣室は17番受付の隣です…", jp:"（着替えが必要な場合）更衣室は17番受付の隣にあります。検査着に着替えて、終わったらここに戻ってきてください。", en:"ห้องเปลี่ยนเสื้อผ้าอยู่ข้างเคาน์เตอร์หมายเลข 17 กรุณาเปลี่ยนเป็นชุดตรวจ แล้วเมื่อเปลี่ยนเสร็จแล้วกลับมาที่นี่นะคะ"},
+ {preview:"胸にペースメーカーやICD、CRT…", jp:"（撮影範囲に胸部を含める場合のみ）胸にペースメーカーやICD、CRTなどの心臓の機器はありますか？", en:"มีอุปกรณ์หัวใจ เช่น เครื่องกระตุ้นหัวใจ ICD หรือ CRT อยู่ที่หน้าอกหรือไม่คะ?"},
+ {preview:"PM、CRT-Pありの場合：では検…", jp:"（PM、CRT-Pありの場合）では検査後に心臓の機器を確認して、正常に作動しているか確認しますね。", en:"ถ้าอย่างนั้น หลังการตรวจ เราจะตรวจดูว่าอุปกรณ์หัวใจของคุณทำงานได้ตามปกติหรือไม่ค่ะ"},
+ {preview:"ICD、CRT-Dありの場合：では…", jp:"（ICD、CRT-Dありの場合）では検査の前後に心臓の機器を確認して、正常に作動しているか確認しますね。", en:"ถ้าอย่างนั้น ก่อนและหลังการตรวจ เราจะตรวจดูว่าอุปกรณ์หัวใจของคุณทำงานได้ตามปกติหรือไม่ค่ะ"},
+ {preview:"ベッドに座って靴を脱いでくださ…", jp:"ベッドに座って靴を脱いでください。", en:"กรุณานั่งบนเตียงและถอดรองเท้าค่ะ"},
+ {preview:"ベッドに仰向けで寝てください。", jp:"ベッドに仰向けで寝てください。", en:"กรุณานอนหงายบนเตียงค่ะ"},
+ {preview:"頭がここで足先がここです。", jp:"頭がここで足先がここです。", en:"ศีรษะอยู่ทางนี้ ปลายเท้าอยู่ทางนั้นค่ะ"},
+ {preview:"少し上に動いてください…", jp:"少し上の方に動いてください。", en:"กรุณาเลื่อนขึ้นไปข้างบนอีกเล็กน้อยค่ะ"},
+ {preview:"少し下に動いてください…", jp:"少し下の方に動いてください。", en:"กรุณาเลื่อนลงมาข้างล่างอีกเล็กน้อยค่ะ"},
+ {preview:"両手を頭の上に上げてください。", jp:"両手を頭の上に上げてください。", en:"กรุณายกแขนทั้งสองข้างขึ้นเหนือศีรษะค่ะ"},
+ {preview:"頭を動かさないでください…", jp:"（頭部CTのみ）頭を動かさないでください。そのままじっとしてください。", en:"กรุณาอย่าขยับศีรษะ อยู่นิ่ง ๆ แบบนั้นนะคะ"},
+ {preview:"検査中にタイ語で息止めの指示を…", jp:"検査中にタイ語で息止めの指示を出しますので、その指示に従ってください。", en:"ระหว่างการตรวจ จะมีคำสั่งกลั้นหายใจเป็นภาษาไทย กรุณาปฏิบัติตามคำสั่งนั้นนะคะ"},
+ {preview:"ベッドが動きます。", jp:"ベッドが動きます。", en:"เตียงจะเคลื่อนนะคะ"},
+ {preview:"検査が終わりました。", jp:"検査が終わりました。", en:"การตรวจเสร็จแล้วค่ะ"},
+ {preview:"検査ご協力ありがとうございました…", jp:"検査ご協力ありがとうございました。", en:"ขอบคุณที่ให้ความร่วมมือในการตรวจค่ะ"},
+ {preview:"ベッドが停止するまでは寝たまま…", jp:"ベッドが停止するまでは寝たままでお願いします。", en:"กรุณานอนอยู่แบบนั้นจนกว่าเตียงจะหยุดสนิทค่ะ"},
+ {preview:"今から心臓の機械を確認します…", jp:"今から、心臓の機械が正常に作動しているか確認しますね。", en:"ตอนนี้เราจะตรวจดูว่าอุปกรณ์หัวใจทำงานได้ตามปกติหรือไม่นะคะ"},
+ {preview:"ゆっくり体を起こしてください。", jp:"ゆっくり体を起こしてください。", en:"กรุณาค่อย ๆ ลุกตัวขึ้นและนั่งช้า ๆ ค่ะ"},
+ {preview:"次は診察がありますので、10番へ…", jp:"次は診察がありますので、10番へ行ってこのファイルを提出してください。", en:"ต่อไปจะเป็นการพบแพทย์ กรุณาไปที่หมายเลข 10 และยื่นแฟ้มนี้ให้เจ้าหน้าที่ค่ะ"},
+ {preview:"19番または20番の前でお待ちくだ…", jp:"19番または20番の検査室の前でお待ちください。", en:"กรุณารออยู่หน้าห้องตรวจหมายเลข 19 หรือ 20 ค่ะ"},
+ {preview:"23番の前でお待ちください。", jp:"23番の検査室の前でお待ちください。", en:"กรุณารออยู่หน้าห้องตรวจหมายเลข 23 ค่ะ"},
+ {preview:"15番の前でお待ちください。", jp:"15番の検査室の前でお待ちください。", en:"กรุณารออยู่หน้าห้องตรวจหมายเลข 15 ค่ะ"},
+ {preview:"もう着替えてもいいですよ。", jp:"（着替えていい場合）もう着替えてもいいですよ。", en:"ตอนนี้สามารถเปลี่ยนเสื้อผ้าได้แล้วค่ะ"},
+ {preview:"まだ他の検査が残っています。", jp:"（他検査がある場合）まだ他の検査が残っています。", en:"ยังมีการตรวจอื่นเหลืออยู่อีกค่ะ"},
+ {preview:"まだ着替えないでください。", jp:"（他検査がある場合）まだ着替えないでください。", en:"กรุณายังไม่ต้องเปลี่ยนเสื้อผ้านะคะ"},
+ {preview:"お大事になさってください。", jp:"お大事になさってください。", en:"ขอให้หายไว ๆ นะคะ"},
+];
+
+const sel=document.getElementById('sel'),
+jp=document.getElementById('jp'),
+en=document.getElementById('en'),
+player=document.getElementById('player'),
+status=document.getElementById('status');
+
+STEPS.forEach((s,i)=>{
+ const o=document.createElement('option');
+ o.value=i;
+ o.textContent=`${String(i+1).padStart(2,'0')}｜${s.jp}`;
+ sel.appendChild(o);
+});
+
+let idx=0;
+function load(i){
+ idx=Math.max(0,Math.min(STEPS.length-1,i));
+ sel.value=idx;
+ jp.textContent=STEPS[idx].jp;
+ en.textContent=STEPS[idx].en;
+ player.src=`audio/step_${String(idx+1).padStart(2,'0')}.m4a`;
+ status.textContent="待機中 / พร้อมเล่น";
+}
+sel.onchange=()=>load(parseInt(sel.value));
+document.getElementById('prev').onclick=()=>load(idx-1);
+document.getElementById('next').onclick=()=>load(idx+1);
+document.getElementById('play').onclick=()=>player.play();
+document.getElementById('pause').onclick=()=>player.pause();
+document.getElementById('replay').onclick=()=>{player.currentTime=0;player.play();}
+player.onplay=()=>status.textContent="再生中 / กำลังเล่น";
+player.onpause=()=>status.textContent="一時停止 / หยุดชั่วคราว";
+player.onended=()=>status.textContent="待機中 / พร้อมเล่น";
+load(0);
+</script>
+</body>
+</html>
